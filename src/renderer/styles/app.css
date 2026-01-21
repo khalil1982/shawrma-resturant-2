@@ -1,103 +1,204 @@
+/**
+ * Shawrma Restaurant POS - Main Stylesheet
+ * دعم RTL كامل + نظام التصميم من Phase1_UIUX_Decisions
+ */
+
+/* ==================== 1. CSS Variables ==================== */
+:root {
+  /* الألوان الأساسية */
+  --color-primary: #D97706;
+  --color-primary-light: #F59E0B;
+  --color-primary-dark: #B45309;
+  --color-secondary: #78350F;
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  /* ألوان الخلفية */
+  --color-bg-primary: #FFFBEB;
+  --color-bg-card: #FFFFFF;
+  --color-bg-secondary: #FEF3C7;
+  --color-bg-disabled: #F3F4F6;
+
+  /* ألوان النصوص */
+  --color-text-primary: #1F2937;
+  --color-text-secondary: #6B7280;
+  --color-text-on-dark: #FFFFFF;
+
+  /* الحدود */
+  --color-border: #E5E7EB;
+  --color-border-focus: #D97706;
+
+  /* المسافات */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* استدارة الزوايا */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* الظلال */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 12px rgba(217, 119, 6, 0.2);
+
+  /* الانتقالات */
+  --transition-fast: all 0.15s ease;
+  --transition-normal: all 0.2s ease;
+}
+
+/* ==================== 2. Reset & Base ==================== */
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+html[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
 }
 
 body {
-  margin: 0;
-  background: #0f172a;
-  color: #e2e8f0;
+  font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
 }
 
+/* ==================== 3. Layout ==================== */
 .app {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 32px 24px 48px;
+  width: 100%;
+  min-height: 100vh;
+  padding: var(--spacing-lg);
 }
 
 .app__header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-xl);
 }
 
+/* ==================== 4. Cards ==================== */
 .card {
-  background: #1e293b;
-  border-radius: 12px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-md);
 }
 
-.form {
-  display: grid;
-  gap: 12px;
-}
-
-.form input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  background: #0f172a;
-  color: #e2e8f0;
-}
-
-.form select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  background: #0f172a;
-  color: #e2e8f0;
-}
-
+/* ==================== 5. Buttons ==================== */
 .btn {
-  background: #38bdf8;
-  border: none;
-  color: #0f172a;
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px 24px;
+  font-size: 18px;
   font-weight: 600;
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-text-on-dark);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-light);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn--secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.btn--danger {
+  background: var(--color-error);
+  color: var(--color-text-on-dark);
 }
 
 .btn--ghost {
   background: transparent;
-  border: 1px solid #38bdf8;
-  color: #38bdf8;
-}
-
-.btn--danger {
-  background: #f43f5e;
-  color: #fff;
+  color: var(--color-text-secondary);
+  border: none;
+  padding: 8px 16px;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ==================== 6. Forms ==================== */
+.form {
+  width: 100%;
+}
+
+.form label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+}
+
+.form input,
+.form select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  color: var(--color-text-primary);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.form input:focus,
+.form select:focus {
+  outline: none;
+  border: 2px solid var(--color-border-focus);
+}
+
+/* ==================== 7. Utility Classes ==================== */
+.hidden {
+  display: none !important;
 }
 
 .actions {
   display: flex;
-  gap: 12px;
-  margin-top: 12px;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
 .hint {
-  margin-top: 10px;
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
 }
 
 .error {
-  margin-top: 10px;
-  color: #f87171;
-}
-
-.hidden {
-  display: none;
+  font-size: 14px;
+  color: var(--color-error);
+  margin-top: var(--spacing-xs);
 }
 
 .permissions ul {
@@ -106,40 +207,40 @@ body {
 }
 
 .session-info {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   font-weight: 600;
 }
 
 .shift-forms {
   display: grid;
-  gap: 16px;
-  margin-top: 12px;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
 }
 
 .shift-status {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   font-weight: 600;
 }
 
 .orders-list {
-  margin-top: 16px;
+  margin-top: var(--spacing-md);
 }
 
 .order-card {
-  border: 1px solid #334155;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 12px;
-  background: #0f172a;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background: var(--color-bg-card);
 }
 
 .order-title {
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .order-meta {
-  font-size: 0.9rem;
-  color: #cbd5f5;
-  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
 }
