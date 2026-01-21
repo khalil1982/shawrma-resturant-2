@@ -1,11 +1,16 @@
 const {
   getOrderById,
+  getOrderWithItems,
   listOrdersForShift,
   createOrderWithItems,
   updateOrderStatus,
   cancelOrder,
+  generateOrderNumber,
+  getActiveOrders,
+  getOrderStatsForShift,
 } = require("../data/repositories/orderRepository");
 const { getActiveShift } = require("./shiftService");
+const { ERROR_MESSAGES } = require("../constants");
 
 const VALID_STATUSES = [
   "created",
@@ -26,7 +31,7 @@ const STATUS_FLOW = {
 const ensureActiveShift = async () => {
   const shift = await getActiveShift();
   if (!shift || shift.state !== "active") {
-    return { ok: false, error: "Active shift required" };
+    return { ok: false, error: ERROR_MESSAGES.NO_ACTIVE_SHIFT };
   }
   return { ok: true, shift };
 };
@@ -191,9 +196,90 @@ const listOrders = async () => {
   return { ok: true, orders };
 };
 
+/**
+ * الحصول على تفاصيل طلب مع الأصناف والإضافات
+ */
+const getOrderDetails = async (orderId) => {
+  const order = await getOrderWithItems(orderId);
+  if (!order) {
+    return { ok: false, error: "Order not found" };
+  }
+  return { ok: true, order };
+};
+
+/**
+ * الحصول على الطلبات النشطة للوردية الحالية
+ */
+const getActiveOrdersList = async () => {
+  const shiftResult = await ensureActiveShift();
+  if (!shiftResult.ok) return shiftResult;
+
+  const activeOrders = await getActiveOrders(shiftResult.shift.id);
+  return { ok: true, orders: activeOrders };
+};
+
+/**
+ * الحصول على إحصائيات طلبات الوردية الحالية
+ */
+const getShiftOrderStats = async () => {
+  const shiftResult = await ensureActiveShift();
+  if (!shiftResult.ok) return shiftResult;
+
+  const stats = await getOrderStatsForShift(shiftResult.shift.id);
+  return { ok: true, stats };
+};
+
+/**
+ * تطبيق خصم على طلب (يجب أن يكون الطلب قيد الإنشاء)
+ */
+const applyDiscount = (subtotal, discountPercent) => {
+  const percent = Number(discountPercent) || 0;
+  if (percent < 0 || percent > 100) {
+    return { ok: false, error: "Invalid discount percentage" };
+  }
+
+  const discountAmount = Number(((subtotal * percent) / 100).toFixed(2));
+  const totalAmount = Number((subtotal - discountAmount).toFixed(2));
+
+  return {
+    ok: true,
+    discountPercent: percent,
+    discountAmount,
+    totalAmount,
+  };
+};
+
+/**
+ * حساب المجموع لطلب جديد
+ */
+const calculateOrderTotal = (items, discountPercent = 0) => {
+  const subtotal = items.reduce((sum, item) => {
+    const lineTotal = Number((item.quantity * item.unitPrice).toFixed(2));
+    return sum + lineTotal;
+  }, 0);
+
+  const discount = applyDiscount(subtotal, discountPercent);
+  if (!discount.ok) {
+    return { ok: false, error: discount.error };
+  }
+
+  return {
+    ok: true,
+    subtotal: Number(subtotal.toFixed(2)),
+    discountPercent: discount.discountPercent,
+    discountAmount: discount.discountAmount,
+    totalAmount: discount.totalAmount,
+  };
+};
+
 module.exports = {
   createOrder,
   transitionOrderStatus,
   cancelOrderWithRefund,
   listOrders,
+  getOrderDetails,
+  getActiveOrdersList,
+  getShiftOrderStats,
+  applyDiscount,
+  calculateOrderTotal,
 };

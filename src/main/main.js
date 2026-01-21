@@ -4,6 +4,7 @@ const { initializeFullSchema } = require("../data/fullSchema");
 const { registerAuthIpc } = require("./ipc/auth-ipc");
 const { registerShiftIpc } = require("./ipc/shift-ipc");
 const { registerOrderIpc } = require("./ipc/order-ipc");
+const { registerMenuIpc } = require("./ipc/menu-ipc");
 
 let mainWindow = null;
 
@@ -61,6 +62,7 @@ app.whenReady().then(async () => {
     registerAuthIpc();
     registerShiftIpc();
     registerOrderIpc();
+    registerMenuIpc();
 
     // إنشاء النافذة
     console.log("🖥️  إنشاء النافذة الرئيسية...");

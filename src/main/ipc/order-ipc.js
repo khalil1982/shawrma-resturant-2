@@ -2,14 +2,21 @@ const { ipcMain } = require("electron");
 const authService = require("../../logic/authService");
 const auditService = require("../../logic/auditService");
 const orderService = require("../../logic/orderService");
+const { checkPermission } = require("../../logic/permissionService");
+const { ERROR_MESSAGES } = require("../../constants");
 
 const registerOrderIpc = () => {
   ipcMain.handle("orders:list", async (_event, { sessionToken }) => {
     const session = await authService.getSessionInfo(sessionToken);
     if (!session.ok) return session;
 
-    if (!session.permissions.includes("order.read")) {
-      return { ok: false, error: "Permission denied" };
+    try {
+      await checkPermission(session.user.id, "order.read");
+    } catch (error) {
+      await auditService.logEvent(session.user.id, "order.read_denied", {
+        reason: "missing_permission",
+      });
+      return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
     }
 
     return orderService.listOrders();
@@ -26,11 +33,13 @@ const registerOrderIpc = () => {
         return session;
       }
 
-      if (!session.permissions.includes("order.create")) {
+      try {
+        await checkPermission(session.user.id, "order.create");
+      } catch (error) {
         await auditService.logEvent(session.user.id, "order.create_denied", {
           reason: "missing_permission",
         });
-        return { ok: false, error: "Permission denied" };
+        return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
       }
 
       const result = await orderService.createOrder({
@@ -70,11 +79,13 @@ const registerOrderIpc = () => {
         return session;
       }
 
-      if (!session.permissions.includes("order.update")) {
+      try {
+        await checkPermission(session.user.id, "order.update");
+      } catch (error) {
         await auditService.logEvent(session.user.id, "order.status_denied", {
           reason: "missing_permission",
         });
-        return { ok: false, error: "Permission denied" };
+        return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
       }
 
       const result = await orderService.transitionOrderStatus({
@@ -113,11 +124,13 @@ const registerOrderIpc = () => {
         return session;
       }
 
-      if (!session.permissions.includes("order.cancel")) {
+      try {
+        await checkPermission(session.user.id, "order.cancel");
+      } catch (error) {
         await auditService.logEvent(session.user.id, "order.cancel_denied", {
           reason: "missing_permission",
         });
-        return { ok: false, error: "Permission denied" };
+        return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
       }
 
       const result = await orderService.cancelOrderWithRefund({
@@ -143,6 +156,57 @@ const registerOrderIpc = () => {
       return result;
     }
   );
+
+  // الحصول على تفاصيل طلب
+  ipcMain.handle("orders:details", async (_event, { sessionToken, orderId }) => {
+    const session = await authService.getSessionInfo(sessionToken);
+    if (!session.ok) return session;
+
+    try {
+      await checkPermission(session.user.id, "order.read");
+    } catch (error) {
+      await auditService.logEvent(session.user.id, "order.read_denied", {
+        reason: "missing_permission",
+      });
+      return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
+    }
+
+    return orderService.getOrderDetails(orderId);
+  });
+
+  // الحصول على الطلبات النشطة
+  ipcMain.handle("orders:active", async (_event, { sessionToken }) => {
+    const session = await authService.getSessionInfo(sessionToken);
+    if (!session.ok) return session;
+
+    try {
+      await checkPermission(session.user.id, "order.read");
+    } catch (error) {
+      await auditService.logEvent(session.user.id, "order.read_denied", {
+        reason: "missing_permission",
+      });
+      return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
+    }
+
+    return orderService.getActiveOrdersList();
+  });
+
+  // الحصول على إحصائيات الطلبات
+  ipcMain.handle("orders:stats", async (_event, { sessionToken }) => {
+    const session = await authService.getSessionInfo(sessionToken);
+    if (!session.ok) return session;
+
+    try {
+      await checkPermission(session.user.id, ["order.read", "report.view"]);
+    } catch (error) {
+      await auditService.logEvent(session.user.id, "order.stats_denied", {
+        reason: "missing_permission",
+      });
+      return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
+    }
+
+    return orderService.getShiftOrderStats();
+  });
 };
 
 module.exports = { registerOrderIpc };
