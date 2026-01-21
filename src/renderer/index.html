@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shawrma POS - Foundation</title>
+    <link rel="stylesheet" href="./styles/app.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app__header">
+        <h1>Shawrma POS</h1>
+        <button id="dirToggle" class="btn btn--ghost">RTL / LTR</button>
+      </header>
+
+      <section class="card" id="authCard">
+        <h2>تسجيل الدخول</h2>
+        <form id="loginForm" class="form">
+          <label>
+            اسم المستخدم
+            <input type="text" id="username" required />
+          </label>
+          <label>
+            كلمة المرور
+            <input type="password" id="password" required />
+          </label>
+          <button type="submit" class="btn">دخول</button>
+        </form>
+        <div class="hint">الحساب الافتراضي: admin / admin123</div>
+        <div id="loginError" class="error hidden"></div>
+      </section>
+
+      <section class="card hidden" id="sessionCard">
+        <h2>الجلسة الحالية</h2>
+        <div id="sessionInfo" class="session-info"></div>
+        <div class="actions">
+          <button id="refreshSession" class="btn btn--ghost">تحديث</button>
+          <button id="logoutBtn" class="btn btn--danger">تسجيل الخروج</button>
+        </div>
+        <div class="permissions">
+          <h3>الصلاحيات</h3>
+          <ul id="permissionList"></ul>
+        </div>
+      </section>
+
+      <section class="card hidden" id="shiftCard">
+        <h2>إدارة الوردية</h2>
+        <div id="shiftStatus" class="shift-status">لا توجد وردية نشطة</div>
+        <div id="shiftError" class="error hidden"></div>
+
+        <div class="shift-forms">
+          <form id="shiftOpenForm" class="form">
+            <h3>فتح وردية</h3>
+            <label>
+              نوع الوردية
+              <select id="shiftType">
+                <option value="morning">صباحية</option>
+                <option value="evening">مسائية</option>
+              </select>
+            </label>
+            <label>
+              رصيد الافتتاح
+              <input type="number" id="openingCash" min="0" step="0.01" required />
+            </label>
+            <button type="submit" class="btn">فتح</button>
+          </form>
+
+          <form id="shiftCloseForm" class="form">
+            <h3>إغلاق وردية</h3>
+            <label>
+              النقد الفعلي
+              <input type="number" id="closingCash" min="0" step="0.01" required />
+            </label>
+            <label>
+              سبب الإغلاق
+              <input type="text" id="closeReason" required />
+            </label>
+            <button type="submit" class="btn btn--danger">إغلاق</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="card hidden" id="ordersCard">
+        <h2>الطلبات</h2>
+        <div id="ordersNotice" class="hint">لا يمكن إنشاء طلب بدون وردية نشطة.</div>
+        <div id="ordersError" class="error hidden"></div>
+
+        <form id="orderCreateForm" class="form">
+          <label>
+            نوع الطلب
+            <select id="orderType">
+              <option value="dine_in">محلي</option>
+              <option value="takeaway">سفري</option>
+            </select>
+          </label>
+          <label>
+            عدد العملاء
+            <input type="number" id="customerCount" min="1" step="1" value="1" required />
+          </label>
+          <button type="submit" class="btn">إنشاء طلب</button>
+          <div class="hint">سيتم إنشاء الطلب بدون أصناف في هذه المرحلة.</div>
+        </form>
+
+        <div class="orders-list">
+          <h3>قائمة الطلبات</h3>
+          <div id="ordersList"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
