@@ -8,7 +8,6 @@ const sessionInfo = document.getElementById("sessionInfo");
 const permissionList = document.getElementById("permissionList");
 const refreshSession = document.getElementById("refreshSession");
 const logoutBtn = document.getElementById("logoutBtn");
-const dirToggle = document.getElementById("dirToggle");
 const shiftCard = document.getElementById("shiftCard");
 const shiftStatus = document.getElementById("shiftStatus");
 const shiftError = document.getElementById("shiftError");
@@ -294,7 +293,3 @@ orderCreateForm.addEventListener("submit", async (event) => {
   await loadOrders();
 });
 
-dirToggle.addEventListener("click", () => {
-  const current = document.documentElement.getAttribute("dir") || "ltr";
-  document.documentElement.setAttribute("dir", current === "rtl" ? "ltr" : "rtl");
-});
