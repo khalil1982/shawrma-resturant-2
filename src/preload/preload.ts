@@ -8,6 +8,7 @@ export interface ElectronAPI {
 
   // Shifts
   getCurrentShift: () => Promise<any>;
+  getShiftSummary?: (shiftId: number) => Promise<any>;
   openShift: (data: any) => Promise<any>;
   closeShift: (data: any) => Promise<any>;
 
@@ -43,6 +44,8 @@ const api: ElectronAPI = {
   // Shifts
   getCurrentShift: () =>
     ipcRenderer.invoke('shift:getCurrent'),
+  getShiftSummary: (shiftId: number) =>
+    ipcRenderer.invoke('shift:getSummary', shiftId),
   openShift: (data) =>
     ipcRenderer.invoke('shift:open', data),
   closeShift: (data) =>
