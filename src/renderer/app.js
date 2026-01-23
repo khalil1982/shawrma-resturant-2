@@ -227,8 +227,10 @@ loginForm.addEventListener("submit", async (event) => {
     return;
   }
   sessionToken = result.sessionToken;
-  await loadSession();
-  passwordInput.value = "";
+  sessionStorage.setItem("sessionToken", sessionToken);
+
+  // الانتقال إلى شاشة POS
+  window.location.href = "pos.html";
 });
 
 refreshSession.addEventListener("click", loadSession);

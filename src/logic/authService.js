@@ -4,11 +4,12 @@ const {
   getUserById,
 } = require("../data/repositories/userRepository");
 const {
-  userHasPermission,
-  getPermissionsForUser,
-} = require("../data/repositories/permissionRepository");
+  getUserPermissionsDetails,
+  hasPermission,
+} = require("./permissionService");
+const { ERROR_MESSAGES, SUCCESS_MESSAGES } = require("../constants");
 
-const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
+const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 ساعات
 const sessions = new Map();
 
 const createSession = (userId) => {
@@ -39,32 +40,54 @@ const verifyPassword = async (password, hash, salt) => {
 
 const login = async (username, password) => {
   purgeExpiredSessions();
+
   const user = await getUserByUsername(username);
   if (!user) {
-    return { ok: false, error: "Invalid credentials" };
+    return { ok: false, error: ERROR_MESSAGES.INVALID_CREDENTIALS };
   }
+
   if (!user.is_active) {
-    return { ok: false, error: "User inactive" };
+    return { ok: false, error: ERROR_MESSAGES.USER_INACTIVE };
   }
+
   const isValid = await verifyPassword(
     password,
     user.password_hash,
     user.password_salt
   );
+
   if (!isValid) {
-    return { ok: false, error: "Invalid credentials" };
+    return { ok: false, error: ERROR_MESSAGES.INVALID_CREDENTIALS };
   }
+
+  // الحصول على الصلاحيات والدور
+  const permissionsDetails = await getUserPermissionsDetails(user.id);
+
   const sessionToken = createSession(user.id);
+
   return {
     ok: true,
+    message: SUCCESS_MESSAGES.LOGIN_SUCCESS,
     sessionToken,
-    user: { id: user.id, username: user.username, role: user.role },
+    user: {
+      id: user.id,
+      username: user.username,
+      full_name: user.full_name,
+      role: permissionsDetails.role,
+      permissions: permissionsDetails.permissions,
+      isAdmin: permissionsDetails.isAdmin,
+      isManager: permissionsDetails.isManager,
+      isCashier: permissionsDetails.isCashier,
+    },
   };
 };
 
 const logout = (sessionToken) => {
   const existed = sessions.delete(sessionToken);
-  return { ok: existed };
+  return {
+    ok: existed,
+    message: existed ? SUCCESS_MESSAGES.LOGOUT_SUCCESS : "جلسة غير موجودة",
+  };
 };
 
 const getUserBySession = (sessionToken) => {
@@ -77,30 +100,50 @@ const getUserBySession = (sessionToken) => {
 const getSessionInfo = async (sessionToken) => {
   purgeExpiredSessions();
   const session = sessions.get(sessionToken);
+
   if (!session) {
-    return { ok: false, error: "Invalid session" };
+    return { ok: false, error: ERROR_MESSAGES.SESSION_EXPIRED };
   }
+
   const user = await getUserById(session.userId);
   if (!user || !user.is_active) {
     sessions.delete(sessionToken);
-    return { ok: false, error: "Invalid session" };
+    return { ok: false, error: ERROR_MESSAGES.SESSION_EXPIRED };
   }
-  const permissions = await getPermissionsForUser(user.id);
+
+  // الحصول على الصلاحيات الكاملة
+  const permissionsDetails = await getUserPermissionsDetails(user.id);
+
   return {
     ok: true,
-    user,
-    permissions: permissions.map((row) => row.key),
+    user: {
+      id: user.id,
+      username: user.username,
+      full_name: user.full_name,
+      role: permissionsDetails.role,
+      permissions: permissionsDetails.permissions,
+      isAdmin: permissionsDetails.isAdmin,
+      isManager: permissionsDetails.isManager,
+      isCashier: permissionsDetails.isCashier,
+    },
   };
 };
 
 const checkPermission = async (sessionToken, permissionKey) => {
   purgeExpiredSessions();
   const session = sessions.get(sessionToken);
+
   if (!session) {
-    return { ok: false, error: "Invalid session" };
+    return { ok: false, error: ERROR_MESSAGES.SESSION_EXPIRED };
   }
-  const allowed = await userHasPermission(session.userId, permissionKey);
-  return { ok: true, allowed };
+
+  const allowed = await hasPermission(session.userId, permissionKey);
+
+  return {
+    ok: true,
+    allowed,
+    message: allowed ? "مصرح" : ERROR_MESSAGES.UNAUTHORIZED,
+  };
 };
 
 const pbkdf2 = (password, salt) =>

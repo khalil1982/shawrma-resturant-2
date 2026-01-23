@@ -1,14 +1,49 @@
 {
-  "name": "shawrma-res",
-  "version": "0.1.0",
+  "name": "shawrma-restaurant-pos",
+  "version": "1.0.0",
+  "description": "نظام إدارة مطعم شاورما - Offline-First POS System",
   "private": true,
   "main": "src/main/main.js",
+  "author": "Shawarma Restaurant",
+  "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dev": "electron ."
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "rebuild": "electron-rebuild -f -w sqlite3"
   },
   "dependencies": {
     "electron": "^28.2.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "bcrypt": "^5.1.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.9.1",
+    "electron-rebuild": "^3.2.9"
+  },
+  "build": {
+    "appId": "com.shawrma.pos",
+    "productName": "Shawrma POS",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png",
+      "category": "Office"
+    }
   }
 }

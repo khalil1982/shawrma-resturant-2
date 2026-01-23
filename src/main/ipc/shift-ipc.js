@@ -2,6 +2,8 @@ const { ipcMain } = require("electron");
 const authService = require("../../logic/authService");
 const auditService = require("../../logic/auditService");
 const shiftService = require("../../logic/shiftService");
+const { checkPermission } = require("../../logic/permissionService");
+const { ERROR_MESSAGES } = require("../../constants");
 
 const registerShiftIpc = () => {
   ipcMain.handle("shift:active", async (_event, { sessionToken }) => {
@@ -22,11 +24,14 @@ const registerShiftIpc = () => {
         return session;
       }
 
-      if (!session.permissions.includes("shift.open")) {
+      // فحص الصلاحية
+      try {
+        await checkPermission(session.user.id, "shift.open");
+      } catch (error) {
         await auditService.logEvent(session.user.id, "shift.open_denied", {
           reason: "missing_permission",
         });
-        return { ok: false, error: "Permission denied" };
+        return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
       }
 
       const result = await shiftService.openShift({
@@ -64,11 +69,14 @@ const registerShiftIpc = () => {
         return session;
       }
 
-      if (!session.permissions.includes("shift.close")) {
+      // فحص الصلاحية
+      try {
+        await checkPermission(session.user.id, "shift.close");
+      } catch (error) {
         await auditService.logEvent(session.user.id, "shift.close_denied", {
           reason: "missing_permission",
         });
-        return { ok: false, error: "Permission denied" };
+        return { ok: false, error: ERROR_MESSAGES.UNAUTHORIZED };
       }
 
       const result = await shiftService.closeShift({
